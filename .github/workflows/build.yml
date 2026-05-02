@@ -14,10 +14,16 @@ jobs:
           
       - name: Install Flet
         run: pip install "flet[all]"
-        
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Build APK
-        # Añadimos --no-interactive para que no pida confirmaciones por consola
-        run: flet build apk --no-interactive
+        # 'yes' acepta todas las instalaciones automáticas de SDK
+        run: yes | flet build apk
         
       - name: Upload APK
         uses: actions/upload-artifact@v4
