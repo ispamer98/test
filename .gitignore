@@ -1,0 +1,38 @@
+# Entornos virtuales
+.venv/
+venv/
+env/
+pyvenv.cfg
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# Datos de la aplicación: NUNCA deben subirse a GitHub.
+# Contienen obras reales, clientes, precios y fotos.
+.datos*/
+datos/
+*.db
+*.db-wal
+*.db-shm
+ObraSec/
+
+# Secretos
+.env
+*.key
+
+# Compilación
+build/
+dist/
+*.spec
+
+# Sistema operativo
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Restos del prototipo anterior en Flet
+test.apk

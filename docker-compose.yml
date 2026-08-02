@@ -1,0 +1,41 @@
+# Despliegue de ObraSec detrás de un túnel de Cloudflare.
+#
+#   1. Copia .env.ejemplo a .env y rellena las dos variables.
+#   2. docker compose up -d
+#   3. Entra en https://obra.tudominio.com
+#
+# El túnel hace la conexión de salida hacia Cloudflare: no hay que abrir
+# ningún puerto en el router ni exponer la IP de casa.
+
+services:
+  obrasec:
+    build: .
+    image: obrasec:latest
+    container_name: obrasec
+    restart: unless-stopped
+    environment:
+      OBRASEC_PUBLIC: "1"
+      OBRASEC_PASSWORD: ${OBRASEC_PASSWORD:?Define OBRASEC_PASSWORD en el archivo .env}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+    volumes:
+      - obrasec-datos:/datos
+    # Sin 'ports': sólo el túnel puede llegar a la app, nunca la red local.
+    expose:
+      - "8321"
+    networks: [obrasec]
+
+  tunel:
+    image: cloudflare/cloudflared:latest
+    container_name: obrasec-tunel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run --token ${CLOUDFLARE_TUNNEL_TOKEN:?Define CLOUDFLARE_TUNNEL_TOKEN en el archivo .env}
+    depends_on:
+      obrasec:
+        condition: service_healthy
+    networks: [obrasec]
+
+volumes:
+  obrasec-datos:
+
+networks:
+  obrasec:

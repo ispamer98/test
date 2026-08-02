@@ -1,32 +1,118 @@
-name: Build Flet APK
-on: [push]
+name: Pruebas y publicación
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
-  build:
+  # ─────────────────────────────────────────────────── pruebas
+  pruebas:
+    name: Pruebas
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Set up Python
-        uses: actions/setup-python@v5
+
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          
-      - name: Install Flet
-        run: pip install "flet[all]"
+          cache: pip
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt httpx
 
-      - name: Build APK
-        # 'yes' acepta todas las instalaciones automáticas de SDK
-        run: yes | flet build apk
-        
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - name: Comprobar sintaxis
+        run: python -m compileall -q app run.py tests
+
+      - name: Prueba de humo
+        run: python tests/test_humo.py
+
+  # ────────────────────────────────────── ejecutable de Windows
+  windows:
+    name: Ejecutable Windows
+    needs: pruebas
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
         with:
-          name: app-release
-          path: build/apk/*.apk
+          python-version: '3.12'
+          cache: pip
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller
+
+      - name: Compilar ObraSec.exe
+        run: >
+          pyinstaller --onefile --name ObraSec
+          --icon app/web/favicon.ico
+          --add-data "app/web;app/web"
+          --collect-submodules uvicorn
+          --collect-submodules anthropic
+          --hidden-import qrcode
+          --hidden-import uvicorn.loops.auto
+          --hidden-import uvicorn.protocols.http.auto
+          --hidden-import uvicorn.protocols.websockets.auto
+          --hidden-import uvicorn.lifespan.on
+          --noconfirm
+          arranque.py
+
+      - name: Comprobar que el ejecutable arranca
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath dist\ObraSec.exe -ArgumentList '--sin-navegador','--puerto','8399' -PassThru
+          Start-Sleep -Seconds 25
+          try {
+            $r = Invoke-WebRequest -Uri http://localhost:8399/api/estado -UseBasicParsing -TimeoutSec 15
+            if ($r.StatusCode -ne 200) { throw "Respuesta $($r.StatusCode)" }
+            Write-Host "El ejecutable responde correctamente: $($r.Content)"
+          } finally {
+            Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+          }
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ObraSec-Windows
+          path: dist/ObraSec.exe
+          retention-days: 90
+
+  # ──────────────────────────────────────────────── publicación
+  publicar:
+    name: Publicar release
+    needs: [pruebas, windows]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: ObraSec-Windows
+          path: dist
+
+      - name: Crear release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/ObraSec.exe
+          generate_release_notes: true
+          body: |
+            ## ObraSec ${{ github.ref_name }}
+
+            **Windows:** descarga `ObraSec.exe`, haz doble clic y listo.
+            No necesita instalar Python ni nada más.
+
+            **Móvil y tablet:** con ObraSec abierto en el PC, la ventana de la
+            consola muestra una dirección y un código QR. Escanéalo con el móvil
+            (misma red Wi-Fi) y añade la página a la pantalla de inicio.
+
+            **Otros sistemas:** `python run.py` desde el código fuente.

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<!-- viewport-fit=cover + maximum-scale evitan el zoom automático de iOS al enfocar un campo -->
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>ObraSec · Gestor de Obra</title>
+<meta name="description" content="Control integral de obras de instalaciones de seguridad">
+<meta name="theme-color" content="#0f172a">
+<link rel="manifest" href="/manifest.webmanifest">
+<!-- iOS: pantalla completa al añadir a la pantalla de inicio -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ObraSec">
+<link rel="apple-touch-icon" href="/static/icono-192.png">
+<link rel="icon" href="/static/icono-192.png">
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+<div id="carga" class="carga">
+  <div class="carga-logo">🏗️</div>
+  <div class="carga-txt">Cargando ObraSec…</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ pantalla de acceso -->
+<div id="login" class="login oculto">
+  <form class="login-caja" id="login-form">
+    <div class="login-logo">🏗️</div>
+    <h1>ObraSec</h1>
+    <p class="login-sub">Control integral de obra</p>
+    <input type="password" id="login-pass" placeholder="Contraseña" autocomplete="current-password" required>
+    <button type="submit" class="btn btn-pri btn-ancho">Entrar</button>
+    <div id="login-error" class="login-error"></div>
+  </form>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════ aplicación -->
+<div id="app" class="app oculto">
+
+  <!-- Barra superior -->
+  <header class="cab">
+    <button class="cab-menu" id="btn-menu" aria-label="Menú">☰</button>
+    <div class="cab-obra" id="selector-obra">
+      <span class="cab-obra-icono">🏗️</span>
+      <div class="cab-obra-txt">
+        <strong id="obra-nombre">Sin obra</strong>
+        <small id="obra-sub">Selecciona una obra</small>
+      </div>
+      <span class="cab-obra-flecha">▾</span>
+    </div>
+    <div class="cab-acciones">
+      <button class="cab-btn" id="btn-buscar" aria-label="Buscar">🔍</button>
+      <button class="cab-btn" id="btn-ia" aria-label="Asistente IA">✨</button>
+      <button class="cab-btn" id="btn-tema" aria-label="Tema">🌓</button>
+    </div>
+  </header>
+
+  <div class="cuerpo">
+    <!-- Menú lateral -->
+    <nav class="lateral" id="lateral">
+      <div class="lateral-scroll" id="menu"></div>
+      <div class="lateral-pie">
+        <button class="menu-item" data-vista="ajustes"><span>⚙️</span> Ajustes</button>
+        <div class="version" id="version"></div>
+      </div>
+    </nav>
+    <div class="velo" id="velo"></div>
+
+    <!-- Contenido -->
+    <main class="principal" id="principal"></main>
+  </div>
+
+  <!-- Navegación inferior (móvil) -->
+  <nav class="inferior" id="inferior">
+    <button class="inf-btn activo" data-vista="panel"><span>📊</span><small>Panel</small></button>
+    <button class="inf-btn" data-vista="tareas"><span>✅</span><small>Tareas</small></button>
+    <button class="inf-btn inf-camara" id="btn-camara"><span>📷</span><small>Escanear</small></button>
+    <button class="inf-btn" data-vista="dispositivos"><span>📹</span><small>Equipos</small></button>
+    <button class="inf-btn" data-vista="mas"><span>⋯</span><small>Más</small></button>
+  </nav>
+</div>
+
+<!-- Capas -->
+<div id="modales"></div>
+<div id="avisos" class="avisos"></div>
+
+<!-- Entrada de cámara: capture=environment abre directamente la cámara trasera en iPhone -->
+<input type="file" id="entrada-camara" accept="image/*" capture="environment" multiple hidden>
+<input type="file" id="entrada-archivo" hidden>
+
+<script type="module" src="/static/js/app.js"></script>
+</body>
+</html>
