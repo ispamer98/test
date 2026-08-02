@@ -240,12 +240,14 @@ app/
   web/            La PWA (HTML, CSS y JS sin compilar)
 tests/
   test_humo.py    Ciclo completo de una obra, de punta a punta
+  test_seguridad.py  Path traversal, inyección SQL, sesiones y secretos
 ```
 
 Para pruebas:
 
 ```bash
-python tests/test_humo.py
+python tests/test_humo.py        # ciclo completo de una obra
+python tests/test_seguridad.py   # defensas: subidas, SQL, sesión, secretos
 ```
 
 ---

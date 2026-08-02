@@ -34,6 +34,9 @@ jobs:
       - name: Prueba de humo
         run: python tests/test_humo.py
 
+      - name: Pruebas de seguridad
+        run: python tests/test_seguridad.py
+
   # ────────────────────────────────────── ejecutable de Windows
   windows:
     name: Ejecutable Windows
