@@ -242,8 +242,25 @@ async function dialogoMarcadores() {
   const cuerpo = el('div', {}, [
     el('div', { class: 'aviso-caja info' },
       'Escribe el marcador tal cual en tu documento de Word. Ejemplo: Obra: {{ obra.nombre }} — Avance: {{ kpi.avance }} %'),
-    el('div', { class: 'aviso-caja aviso' },
-      'Para listar tablas usa un bucle: {% for x in dispositivos %} … {{ x.etiqueta }} … {% endfor %}. En una tabla de Word, pon la apertura del bucle en la primera celda de la fila y el cierre en la última.'),
+    el('div', { class: 'aviso-caja aviso' }, [
+      el('strong', { txt: 'Para repetir filas de una tabla' }),
+      el('p', { estilo: { margin: '6px 0' } },
+        'Necesitas tres filas: una sólo con la apertura, una con los datos y otra sólo con el cierre. '
+        + 'Al generar el informe, las filas de apertura y cierre desaparecen.'),
+      el('div', {
+        class: 'leido',
+        txt: '┌─────────────────────────────────────────┐\n'
+           + '│ {%tr for x in dispositivos %}           │  ← fila sola\n'
+           + '├──────────────┬────────────┬─────────────┤\n'
+           + '│ {{ x.etiqueta }} │ {{ x.modelo }} │ {{ x.ip }} │  ← se repite\n'
+           + '├──────────────┴────────────┴─────────────┤\n'
+           + '│ {%tr endfor %}                          │  ← fila sola\n'
+           + '└─────────────────────────────────────────┘',
+      }),
+      el('p', { estilo: { margin: '6px 0 0' } },
+        'Para listas fuera de tablas, usa {%p for a in alertas %} en un párrafo suelto y '
+        + '{%p endfor %} en otro.'),
+    ]),
   ]);
   for (const [grupo, lista] of Object.entries(campos)) {
     const det = el('details', { estilo: { marginBottom: '8px' } }, [

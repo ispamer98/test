@@ -6,9 +6,20 @@ El usuario sube su propia plantilla con marcadores estilo Jinja2:
     Obra: {{ obra.nombre }}
     Cliente: {{ obra.cliente }}          Avance: {{ kpi.avance }} %
 
-    {% for d in dispositivos %}
-    {{ d.etiqueta }} | {{ d.modelo }} | {{ d.num_serie }} | {{ d.ip }}
-    {% endfor %}
+Para repetir filas de una tabla de Word hacen falta tres filas: una con la
+apertura del bucle, otra con los datos y otra con el cierre. Las de control
+desaparecen al renderizar:
+
+    ┌──────────────────────────────┐
+    │ {%tr for x in dispositivos %}│
+    ├──────────┬─────────┬─────────┤
+    │{{x.etiqueta}}│{{x.modelo}}│{{x.ip}}│
+    ├──────────┴─────────┴─────────┤
+    │ {%tr endfor %}               │
+    └──────────────────────────────┘
+
+Poner la apertura y el cierre dentro de la misma fila —lo que sugiere la
+documentación de docxtpl— falla en la versión 0.20 con «unknown tag endfor».
 
 Se rellena con los datos reales de la obra y se descarga el .docx resultante,
 conservando membrete, estilos, tablas y pies de página de la plantilla original.
